@@ -1,0 +1,66 @@
+#=================================================
+# Description: Build OpenWrt using GitHub Actions
+# Lisence: MIT
+#=================================================
+
+name: 编译 Rax3000m_nand_UBoot
+
+# 以下开关，触发工作流
+on: 
+  repository_dispatch:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 工作流完毕
+      uses: actions/checkout@main
+
+    - name: 初始化环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        set +e
+        docker rmi `docker images -q`
+        sudo rm -rf \
+          /usr/share/dotnet \
+          /etc/mysql \
+          /etc/php
+        sudo -E apt-get -y purge \
+          azure-cli \
+          ghc* \
+          zulu* \
+          hhvm \
+          llvm* \
+          firefox \
+          google* \
+          dotnet* \
+          powershell \
+          openjdk* \
+          mysql* \
+          php*
+        sudo -E apt-get update
+        sudo -E apt-get -y install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get clean
+    - name: 下载源码和分支
+      env: 
+        REPO_URL: https://github.com/hanwckf/bl-mt798x
+        REPO_BRANCH: master
+      run: |
+        git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
+        cd openwrt
+  
+    - name: 编译UBoot
+      working-directory: ./openwrt
+      run: |
+        SOC=mt7981 BOARD=cmcc_rax3000m ./build.sh
+        echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+        
+    - name : 打包固件
+      uses: actions/upload-artifact@main
+      with:
+        name: Rax3000m_nand_uboot${{ env.FILE_DATE }}
+        path: openwrt/output/
