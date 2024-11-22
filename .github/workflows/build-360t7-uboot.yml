@@ -9,7 +9,9 @@ name: 编译 360T7_nand_UBoot
 on: 
   repository_dispatch:
   workflow_dispatch:
-
+  watch:
+    types: [started]
+    
 jobs:
   build:
     runs-on: ubuntu-latest
