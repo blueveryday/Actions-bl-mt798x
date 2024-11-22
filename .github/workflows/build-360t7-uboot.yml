@@ -3,7 +3,7 @@
 # Lisence: MIT
 #=================================================
 
-name: 编译 Rax3000m_nand_UBoot
+name: 编译 360T7_nand_UBoot
 
 # 以下开关，触发工作流
 on: 
@@ -34,11 +34,11 @@ jobs:
     - name: 编译UBoot
       working-directory: ./openwrt
       run: |
-        SOC=mt7981 BOARD=cmcc_rax3000m ./build.sh
+        SOC=mt7981 BOARD=360t7 ./build.sh
         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
         
     - name : 打包固件
       uses: actions/upload-artifact@main
       with:
-        name: Rax3000m_nand_uboot${{ env.FILE_DATE }}
+        name: 360t7_nand_uboot${{ env.FILE_DATE }}
         path: openwrt/output/
